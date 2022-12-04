@@ -223,7 +223,7 @@ if (WIN32)
     list(APPEND MONO_SCRIPT_SOURCES ${MONO_SCRIPT_LIBRARY_PATH}/mono/utils/mono-threads-coop.c)
     list(APPEND MONO_SCRIPT_SOURCES ${MONO_SCRIPT_LIBRARY_PATH}/mono/utils/mono-dl-windows.c)
 
-    #list(APPEND MONO_SCRIPT_SOURCES ${MONO_SCRIPT_LIBRARY_PATH}/mono/utils/win64.asm)
+    list(APPEND MONO_SCRIPT_SOURCES ${MONO_SCRIPT_LIBRARY_PATH}/mono/utils/win64.asm)
 
     list(APPEND MONO_SCRIPT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/inc/MonoScript/CPU/cpu-amd64.c)
 endif()
