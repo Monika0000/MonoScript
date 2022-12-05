@@ -1,7 +1,6 @@
-cmake_minimum_required(VERSION 3.16)
-project(MonoMetadata)
-
-set(CMAKE_CXX_STANDARD 20)
+include(common.cmake)
+include(Utils.cmake)
+include(eglib.cmake)
 
 if (WIN32 AND MONO_SCRIPT_CROSS)
     FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/MonoScript/Metadata/offsets.h
@@ -16,35 +15,6 @@ if (WIN32 AND MONO_SCRIPT_CROSS)
         "#endif"
     )
 endif()
-
-FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/MonoScript/Metadata/config.h
-    "#ifndef MONO_SCRIPT_CONFIG_H\n"
-    "#define MONO_SCRIPT_CONFIG_H\n\n"
-
-    "#define ENABLE_EXPERIMENT_null\n\n"
-    "#define USED_CROSS_COMPILER_OFFSETS 1\n\n"
-
-    "#ifdef _MSC_VER\n"
-        "\t#pragma warning (disable: 4005)\n"
-        "\t#pragma warning (disable: 4067)\n"
-        "\t#pragma warning (disable: 4133)\n"
-        "\t#pragma warning (disable: 4090)\n"
-        "\t#pragma warning (disable: 4028)\n"
-        "\t#pragma warning (disable: 4098)\n"
-    "#endif\n\n"
-
-    "#ifdef WIN32\n"
-        "\t#define NVALGRIND\n"
-        "\t#include \"${MONO_SCRIPT_LIBRARY_PATH}/winconfig.h\"\n"
-
-        "\t#define WIN32_LEAN_AND_MEAN\n"
-        "\t#include <WinSock2.h>\n"
-        "\t#include <WS2tcpip.h>\n"
-        "\t#include <Windows.h>\n"
-    "#endif\n\n"
-
-    "#endif // MONO_SCRIPT_CONFIG_H\n"
-)
 
 list(APPEND MONO_SCRIPT_METADATA_SOURCES ${MONO_SCRIPT_LIBRARY_PATH}/mono/metadata/marshal.c)
 list(APPEND MONO_SCRIPT_METADATA_SOURCES ${MONO_SCRIPT_LIBRARY_PATH}/mono/metadata/class.c)
@@ -163,9 +133,8 @@ if (WIN32)
     list(APPEND MONO_SCRIPT_METADATA_SOURCES ${MONO_SCRIPT_LIBRARY_PATH}/mono/metadata/file-mmap-windows.c)
     list(APPEND MONO_SCRIPT_METADATA_SOURCES ${MONO_SCRIPT_LIBRARY_PATH}/mono/metadata/w32socket-win32.c)
 
-
     FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/MonoScript/Metadata/w32error-win32-fixed.c
-        "#include \"${CMAKE_CURRENT_BINARY_DIR}/MonoScript/Metadata/config.h\"\n"
+        "#include \"${MONO_SCRIPT_CONFIG_PATH}/config.h\"\n"
         "#include \"${MONO_SCRIPT_LIBRARY_PATH}/mono/metadata/w32error-win32.c\"\n"
     )
 
@@ -202,15 +171,16 @@ list(APPEND MONO_SCRIPT_METADATA_SOURCES ${MONO_SCRIPT_LIBRARY_PATH}/mono/sgen/s
 
 add_library(MonoScriptMetadata STATIC ${MONO_SCRIPT_METADATA_SOURCES})
 
-#if ((WIN32) AND (MONO_SCRIPT_CROSS))
-    target_compile_definitions(MonoScriptMetadata PRIVATE USED_CROSS_COMPILER_OFFSETS=1)
-    target_compile_definitions(MonoScriptMetadata PRIVATE MONO_CROSS_COMPILE=1)
-    target_compile_definitions(MonoScriptMetadata PRIVATE MONO_OFFSETS_FILE=<${CMAKE_CURRENT_BINARY_DIR}/MonoScript/Metadata/offsets.h>)
-#endif()
+target_compile_definitions(MonoScriptMetadata PRIVATE USED_CROSS_COMPILER_OFFSETS=1)
+target_compile_definitions(MonoScriptMetadata PRIVATE MONO_CROSS_COMPILE=1)
+target_compile_definitions(MonoScriptMetadata PRIVATE MONO_OFFSETS_FILE=<${CMAKE_CURRENT_BINARY_DIR}/MonoScript/Metadata/offsets.h>)
 
 target_compile_definitions(MonoScriptMetadata PRIVATE HAVE_SGEN_GC)
+
+target_link_libraries(MonoScriptMetadata eglib)
 
 target_include_directories(MonoScriptMetadata PRIVATE ${MONO_SCRIPT_LIBRARY_PATH}/mono)
 target_include_directories(MonoScriptMetadata PRIVATE ${MONO_SCRIPT_LIBRARY_PATH})
 target_include_directories(MonoScriptMetadata PRIVATE ${MONO_SCRIPT_LIBRARY_PATH}/mono/eglib)
-target_include_directories(MonoScriptMetadata PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/MonoScript/Metadata)
+target_include_directories(MonoScriptMetadata PRIVATE ${MONO_SCRIPT_LIBRARY_PATH})
+target_include_directories(MonoScriptMetadata PRIVATE ${MONO_SCRIPT_CONFIG_PATH})

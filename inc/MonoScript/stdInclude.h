@@ -7,6 +7,9 @@
 
 #include <MonoScript/macros.h>
 
-#include <mono/mini/jit.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <functional>
 
 #endif //MONOSCRIPTTEST_STDINCLUDE_H
